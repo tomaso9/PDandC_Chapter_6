@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Policy Instrument Diagnostic</title>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #fff; }
+    input[type="range"] { height: 6px; cursor: pointer; }
+    select { cursor: pointer; }
+    button { cursor: pointer; }
+    button:hover { background: #eee !important; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useMemo } = React;
+
+    const INSTRUMENTS = [
+      {
+        id: "information",
+        label: "Information / Education Campaign",
+        assumptionText: "Assumes the problem is that people don't know enough \u2014 and that once informed, they have the means and willingness to act.",
+        weights: { awareness: -0.35, capacity: 0.25, motivation: 0.25, trust: 0.25, norms: 0.1 },
+        fails: [
+          { dim: "awareness", dir: "high", msg: "Awareness is already high \u2014 this addresses a problem that may not exist." },
+          { dim: "capacity", dir: "low", msg: "People may understand the issue but lack the resources to act on it." },
+          { dim: "motivation", dir: "low", msg: "Information alone rarely overcomes deep motivational barriers." },
+          { dim: "trust", dir: "low", msg: "Low trust means the message may be dismissed or met with suspicion." },
+        ],
+      },
+      {
+        id: "incentive",
+        label: "Financial Incentive / Subsidy",
+        assumptionText: "Assumes people are aware and somewhat able, but that cost-benefit calculations are the binding constraint.",
+        weights: { awareness: 0.15, capacity: 0.2, motivation: -0.3, trust: 0.2, norms: 0.05 },
+        fails: [
+          { dim: "motivation", dir: "high", msg: "Motivation is already high \u2014 the incentive may be unnecessary spending." },
+          { dim: "capacity", dir: "low", msg: "Even with incentives, people may lack the time, skills, or infrastructure to comply." },
+          { dim: "awareness", dir: "low", msg: "If people don't know about the program, incentives go unclaimed." },
+        ],
+      },
+      {
+        id: "regulation",
+        label: "Regulation / Mandate",
+        assumptionText: "Assumes compliance can be compelled regardless of motivation, but that people have the capacity to comply and see enforcement as legitimate.",
+        weights: { awareness: 0.05, capacity: 0.35, motivation: 0.05, trust: 0.25, norms: 0.15 },
+        fails: [
+          { dim: "capacity", dir: "low", msg: "Mandating behavior people cannot perform creates non-compliance by default." },
+          { dim: "trust", dir: "low", msg: "Low trust breeds resistance and evasion \u2014 enforcement costs escalate." },
+          { dim: "norms", dir: "low", msg: "When social norms oppose the regulation, widespread non-compliance follows." },
+        ],
+      },
+      {
+        id: "nudge",
+        label: "Nudge / Choice Architecture",
+        assumptionText: "Assumes people are roughly willing but face cognitive friction \u2014 inertia, complexity, present bias. Makes the desired behavior the path of least resistance.",
+        weights: { awareness: 0.15, capacity: 0.15, motivation: 0.25, trust: 0.15, norms: 0.15 },
+        fails: [
+          { dim: "motivation", dir: "low", msg: "Nudges rely on latent willingness \u2014 they cannot overcome active opposition." },
+          { dim: "capacity", dir: "low", msg: "Simplifying choices helps, but cannot compensate for fundamental resource deficits." },
+          { dim: "trust", dir: "low", msg: "If people perceive the nudge as manipulation, it can backfire." },
+        ],
+      },
+      {
+        id: "facilitation",
+        label: "Facilitation / Capacity Building",
+        assumptionText: "Assumes people want to comply but face practical barriers \u2014 lack of skills, resources, or access. Invests in building the ability to act.",
+        weights: { awareness: 0.1, capacity: -0.35, motivation: 0.3, trust: 0.15, norms: 0.05 },
+        fails: [
+          { dim: "capacity", dir: "high", msg: "Capacity is already high \u2014 resources are misallocated, the barrier lies elsewhere." },
+          { dim: "motivation", dir: "low", msg: "Building capacity for people who don't want to participate yields low returns." },
+          { dim: "awareness", dir: "low", msg: "People who don't know the program exists won't seek out facilitation." },
+        ],
+      },
+      {
+        id: "participatory",
+        label: "Community-Based / Participatory",
+        assumptionText: "Assumes top-down approaches have failed or lack legitimacy. Aims to build trust and shift norms through shared ownership of the process.",
+        weights: { awareness: 0.1, capacity: 0.1, motivation: 0.15, trust: -0.25, norms: -0.25 },
+        fails: [
+          { dim: "trust", dir: "high", msg: "When trust is already high, participatory processes may add delay without benefit." },
+          { dim: "capacity", dir: "low", msg: "Meaningful participation requires time and resources \u2014 it can exclude the most constrained." },
+          { dim: "motivation", dir: "low", msg: "Deeply disengaged populations may not come to the table." },
+        ],
+      },
+    ];
+
+    const DIMS = [
+      { id: "awareness", label: "Awareness", low: "Unaware", high: "Well-informed" },
+      { id: "capacity", label: "Capacity to Comply", low: "Major barriers", high: "Fully able" },
+      { id: "motivation", label: "Motivation", low: "Resistant", high: "Eager" },
+      { id: "trust", label: "Trust in Institutions", low: "Deep distrust", high: "High confidence" },
+      { id: "norms", label: "Social Norm Alignment", low: "Norms oppose", high: "Norms support" },
+    ];
+
+    const PRESETS = [
+      { label: "Well-resourced, disengaged", p: { awareness: 75, capacity: 80, motivation: 25, trust: 50, norms: 40 } },
+      { label: "Willing but constrained", p: { awareness: 60, capacity: 20, motivation: 80, trust: 55, norms: 60 } },
+      { label: "Low-trust community", p: { awareness: 50, capacity: 55, motivation: 50, trust: 15, norms: 35 } },
+      { label: "Uninformed population", p: { awareness: 15, capacity: 65, motivation: 55, trust: 60, norms: 50 } },
+    ];
+
+    function getUptake(profile, inst) {
+      let base = 0.45;
+      for (const d of DIMS) base += (inst.weights[d.id] || 0) * (profile[d.id] / 100);
+      return Math.max(0.05, Math.min(0.95, base));
+    }
+
+    function getMismatches(profile, inst) {
+      return inst.fails.filter((f) => {
+        const v = profile[f.dim];
+        return (f.dir === "low" && v < 35) || (f.dir === "high" && v > 65);
+      }).map((f) => ({ ...f, critical: f.dir === "low" ? profile[f.dim] < 20 : profile[f.dim] > 80 }));
+    }
+
+    function getAllRanked(profile) {
+      return INSTRUMENTS.map((inst) => ({
+        id: inst.id, label: inst.label,
+        uptake: getUptake(profile, inst),
+        criticals: getMismatches(profile, inst).filter((m) => m.critical).length,
+      })).sort((a, b) => (b.uptake - b.criticals * 0.15) - (a.uptake - a.criticals * 0.15));
+    }
+
+    function App() {
+      const [profile, setProfile] = useState({ awareness: 50, capacity: 50, motivation: 50, trust: 50, norms: 50 });
+      const [selId, setSelId] = useState("information");
+
+      const inst = INSTRUMENTS.find((i) => i.id === selId);
+      const uptake = useMemo(() => Math.round(getUptake(profile, inst) * 100), [profile, selId]);
+      const mismatches = useMemo(() => getMismatches(profile, inst), [profile, selId]);
+      const ranked = useMemo(() => getAllRanked(profile), [profile]);
+
+      const barColor = uptake >= 60 ? "#059669" : uptake >= 40 ? "#d97706" : "#dc2626";
+
+      return (
+        <div style={{ fontFamily: "'Libre Franklin', system-ui, sans-serif", maxWidth: 680, margin: "0 auto", padding: "20px 16px", color: "#1a1a1a" }}>
+
+          <h1 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 4px" }}>Policy Instrument Diagnostic</h1>
+          <p style={{ fontSize: 14, color: "#555", margin: "0 0 20px", lineHeight: 1.5 }}>
+            Define a target population, choose an instrument, and see whether its built-in assumptions match the population you've described.
+          </p>
+
+          {/* Presets */}
+          <div style={{ marginBottom: 18, display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {PRESETS.map((pr) => (
+              <button key={pr.label} onClick={() => setProfile(pr.p)} style={{
+                fontSize: 12, padding: "4px 10px", borderRadius: 4, border: "1px solid #d0d0d0",
+                background: "#fafafa", color: "#555", fontFamily: "inherit",
+              }}>{pr.label}</button>
+            ))}
+          </div>
+
+          {/* Sliders */}
+          <div style={{ marginBottom: 22 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#888", marginBottom: 10 }}>
+              Population Profile
+            </div>
+            {DIMS.map((d) => (
+              <div key={d.id} style={{ marginBottom: 12 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, fontWeight: 600, marginBottom: 2 }}>
+                  <span>{d.label}</span>
+                  <span style={{ fontWeight: 400, color: "#888", fontVariantNumeric: "tabular-nums" }}>{profile[d.id]}</span>
+                </div>
+                <input type="range" min={0} max={100} value={profile[d.id]}
+                  onChange={(e) => setProfile((p) => ({ ...p, [d.id]: +e.target.value }))}
+                  style={{ width: "100%", accentColor: "#2563eb" }} />
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#999", marginTop: 1 }}>
+                  <span>{d.low}</span><span>{d.high}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Instrument Select */}
+          <div style={{ marginBottom: 22 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#888", marginBottom: 10 }}>
+              Choose an Instrument
+            </div>
+            <select value={selId} onChange={(e) => setSelId(e.target.value)} style={{
+              width: "100%", padding: "10px 12px", fontSize: 14, borderRadius: 6,
+              border: "1.5px solid #d0d0d0", background: "#fff", fontFamily: "inherit",
+            }}>
+              {INSTRUMENTS.map((i) => <option key={i.id} value={i.id}>{i.label}</option>)}
+            </select>
+            <div style={{ padding: "10px 14px", borderRadius: 8, background: "#f0f4ff", border: "1.5px solid #c7d7fe", fontSize: 13.5, lineHeight: 1.55, color: "#333", marginTop: 10 }}>
+              <strong>This instrument assumes:</strong> {inst.assumptionText}
+            </div>
+          </div>
+
+          {/* Results */}
+          <div style={{ marginBottom: 22 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#888", marginBottom: 10 }}>
+              Diagnostic
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+              <span style={{ fontSize: 14 }}>Projected uptake</span>
+              <span style={{ fontSize: 20, fontWeight: 700, color: barColor }}>{uptake}%</span>
+            </div>
+            <div style={{ height: 10, borderRadius: 5, background: "#e5e5e5", overflow: "hidden", margin: "6px 0 12px" }}>
+              <div style={{ height: "100%", borderRadius: 5, width: `${uptake}%`, background: barColor, transition: "all 0.35s ease" }} />
+            </div>
+
+            {mismatches.length === 0 ? (
+              <div style={{ padding: "8px 12px", borderRadius: 6, background: "#f0fdf4", border: "1px solid #bbf7d0", fontSize: 13, color: "#166534" }}>
+                &#10003; Good fit — no major mismatches detected.
+              </div>
+            ) : mismatches.map((m, i) => (
+              <div key={i} style={{
+                padding: "8px 12px", borderRadius: 6, marginBottom: 6,
+                background: m.critical ? "#fef2f2" : "#fffbeb",
+                border: `1px solid ${m.critical ? "#fecaca" : "#fde68a"}`,
+                fontSize: 13, lineHeight: 1.5, color: "#333",
+              }}>
+                <strong style={{ color: m.critical ? "#dc2626" : "#92400e" }}>
+                  {m.critical ? "\u26A0 Mismatch" : "\u25C6 Caution"}
+                </strong>{" "}
+                <span style={{ color: "#888", fontSize: 12 }}>({DIMS.find((dd) => dd.id === m.dim)?.label})</span>
+                <br />{m.msg}
+              </div>
+            ))}
+          </div>
+
+          {/* Ranking */}
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#888", marginBottom: 10 }}>
+              Instrument Fit Ranking
+            </div>
+            {ranked.map((r, i) => (
+              <div key={r.id} style={{
+                display: "flex", alignItems: "center", gap: 8, padding: "5px 8px", borderRadius: 5,
+                background: r.id === selId ? "#eff6ff" : "transparent", fontSize: 13.5,
+              }}>
+                <span style={{ fontWeight: 700, color: "#aaa", minWidth: 20 }}>{i + 1}.</span>
+                <span style={{ flex: 1, fontWeight: r.id === selId ? 700 : 400 }}>{r.label}</span>
+                <span style={{ fontWeight: 600, fontVariantNumeric: "tabular-nums", color: r.uptake >= 0.6 ? "#059669" : r.uptake >= 0.4 ? "#d97706" : "#dc2626" }}>
+                  {Math.round(r.uptake * 100)}%
+                </span>
+                {r.criticals > 0 && <span style={{ fontSize: 11, color: "#dc2626", fontWeight: 600 }}>{r.criticals}\u26A0</span>}
+              </div>
+            ))}
+          </div>
+
+          <div style={{ padding: "12px 14px", borderRadius: 6, borderLeft: "3px solid #2563eb", background: "#f5f5f5", fontSize: 13, lineHeight: 1.6, color: "#444" }}>
+            <strong>Reflection:</strong> No instrument is universally "best." Each embeds assumptions about why people aren't complying. When those assumptions don't match reality, the policy underperforms — not because of poor implementation, but because it was designed for a population that doesn't exist.
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
