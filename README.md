@@ -15,7 +15,7 @@ A fit ranking compares all six instruments against the current profile, reinforc
 
 ## How to Use It
 
-Visit the live version at: `https://tomaso9.github.io/PDandC_Chapter_6/`
+Visit the live version at: `https://tomaso9.github.io/PDandG_Chapter_6/`
 
 No installation or login required. Works in any modern browser on desktop, tablet, or mobile.
 
