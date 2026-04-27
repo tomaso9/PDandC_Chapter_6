@@ -26,10 +26,11 @@
       {
         id: "information",
         label: "Information / Education Campaign",
-        assumptionText: "Assumes the problem is that people don't know enough \u2014 and that once informed, they have the means and willingness to act.",
+        shortDesc: "Public messaging, awareness campaigns, educational outreach, informational websites, media campaigns. The government tries to change behavior by giving people knowledge they presumably lack.",
+        assumptionText: "Assumes the problem is that people don't know enough — and that once informed, they have the means and willingness to act.",
         weights: { awareness: -0.35, capacity: 0.25, motivation: 0.25, trust: 0.25, norms: 0.1 },
         fails: [
-          { dim: "awareness", dir: "high", msg: "Awareness is already high \u2014 this addresses a problem that may not exist." },
+          { dim: "awareness", dir: "high", msg: "Awareness is already high — this addresses a problem that may not exist." },
           { dim: "capacity", dir: "low", msg: "People may understand the issue but lack the resources to act on it." },
           { dim: "motivation", dir: "low", msg: "Information alone rarely overcomes deep motivational barriers." },
           { dim: "trust", dir: "low", msg: "Low trust means the message may be dismissed or met with suspicion." },
@@ -38,10 +39,11 @@
       {
         id: "incentive",
         label: "Financial Incentive / Subsidy",
+        shortDesc: "Tax credits, subsidies, grants, rebates, conditional cash transfers, fee waivers. The government makes the desired behavior cheaper or more financially attractive.",
         assumptionText: "Assumes people are aware and somewhat able, but that cost-benefit calculations are the binding constraint.",
         weights: { awareness: 0.15, capacity: 0.2, motivation: -0.3, trust: 0.2, norms: 0.05 },
         fails: [
-          { dim: "motivation", dir: "high", msg: "Motivation is already high \u2014 the incentive may be unnecessary spending." },
+          { dim: "motivation", dir: "high", msg: "Motivation is already high — the incentive may be unnecessary spending." },
           { dim: "capacity", dir: "low", msg: "Even with incentives, people may lack the time, skills, or infrastructure to comply." },
           { dim: "awareness", dir: "low", msg: "If people don't know about the program, incentives go unclaimed." },
         ],
@@ -49,21 +51,23 @@
       {
         id: "regulation",
         label: "Regulation / Mandate",
+        shortDesc: "Laws, rules, permits, bans, standards, licensing requirements, and enforcement mechanisms (fines, penalties, inspections). The government compels behavior through legal authority.",
         assumptionText: "Assumes compliance can be compelled regardless of motivation, but that people have the capacity to comply and see enforcement as legitimate.",
         weights: { awareness: 0.05, capacity: 0.35, motivation: 0.05, trust: 0.25, norms: 0.15 },
         fails: [
           { dim: "capacity", dir: "low", msg: "Mandating behavior people cannot perform creates non-compliance by default." },
-          { dim: "trust", dir: "low", msg: "Low trust breeds resistance and evasion \u2014 enforcement costs escalate." },
+          { dim: "trust", dir: "low", msg: "Low trust breeds resistance and evasion — enforcement costs escalate." },
           { dim: "norms", dir: "low", msg: "When social norms oppose the regulation, widespread non-compliance follows." },
         ],
       },
       {
         id: "nudge",
         label: "Nudge / Choice Architecture",
-        assumptionText: "Assumes people are roughly willing but face cognitive friction \u2014 inertia, complexity, present bias. Makes the desired behavior the path of least resistance.",
+        shortDesc: "Default options, simplified forms, strategic framing, reminders, opt-out rather than opt-in designs. The government restructures the choice environment to make the desired behavior easier without restricting options.",
+        assumptionText: "Assumes people are roughly willing but face cognitive friction — inertia, complexity, present bias. Makes the desired behavior the path of least resistance.",
         weights: { awareness: 0.15, capacity: 0.15, motivation: 0.25, trust: 0.15, norms: 0.15 },
         fails: [
-          { dim: "motivation", dir: "low", msg: "Nudges rely on latent willingness \u2014 they cannot overcome active opposition." },
+          { dim: "motivation", dir: "low", msg: "Nudges rely on latent willingness — they cannot overcome active opposition." },
           { dim: "capacity", dir: "low", msg: "Simplifying choices helps, but cannot compensate for fundamental resource deficits." },
           { dim: "trust", dir: "low", msg: "If people perceive the nudge as manipulation, it can backfire." },
         ],
@@ -71,10 +75,11 @@
       {
         id: "facilitation",
         label: "Facilitation / Capacity Building",
-        assumptionText: "Assumes people want to comply but face practical barriers \u2014 lack of skills, resources, or access. Invests in building the ability to act.",
+        shortDesc: "Training programs, technical assistance, one-stop service centers, infrastructure investment, translation services. The government removes practical barriers by building the target population's ability to act.",
+        assumptionText: "Assumes people want to comply but face practical barriers — lack of skills, resources, or access. Invests in building the ability to act.",
         weights: { awareness: 0.1, capacity: -0.35, motivation: 0.3, trust: 0.15, norms: 0.05 },
         fails: [
-          { dim: "capacity", dir: "high", msg: "Capacity is already high \u2014 resources are misallocated, the barrier lies elsewhere." },
+          { dim: "capacity", dir: "high", msg: "Capacity is already high — resources are misallocated, the barrier lies elsewhere." },
           { dim: "motivation", dir: "low", msg: "Building capacity for people who don't want to participate yields low returns." },
           { dim: "awareness", dir: "low", msg: "People who don't know the program exists won't seek out facilitation." },
         ],
@@ -82,22 +87,53 @@
       {
         id: "participatory",
         label: "Community-Based / Participatory",
+        shortDesc: "Co-design workshops, community advisory boards, deliberative forums, peer networks, collaborative governance. The government shares decision-making power to build legitimacy and tailor solutions to local context.",
         assumptionText: "Assumes top-down approaches have failed or lack legitimacy. Aims to build trust and shift norms through shared ownership of the process.",
         weights: { awareness: 0.1, capacity: 0.1, motivation: 0.15, trust: -0.25, norms: -0.25 },
         fails: [
           { dim: "trust", dir: "high", msg: "When trust is already high, participatory processes may add delay without benefit." },
-          { dim: "capacity", dir: "low", msg: "Meaningful participation requires time and resources \u2014 it can exclude the most constrained." },
+          { dim: "capacity", dir: "low", msg: "Meaningful participation requires time and resources — it can exclude the most constrained." },
           { dim: "motivation", dir: "low", msg: "Deeply disengaged populations may not come to the table." },
         ],
       },
     ];
 
     const DIMS = [
-      { id: "awareness", label: "Awareness", low: "Unaware", high: "Well-informed" },
-      { id: "capacity", label: "Capacity to Comply", low: "Major barriers", high: "Fully able" },
-      { id: "motivation", label: "Motivation", low: "Resistant", high: "Eager" },
-      { id: "trust", label: "Trust in Institutions", low: "Deep distrust", high: "High confidence" },
-      { id: "norms", label: "Social Norm Alignment", low: "Norms oppose", high: "Norms support" },
+      {
+        id: "awareness",
+        label: "Awareness",
+        desc: "How much does the target population know about the policy issue, their options, and how to act?",
+        low: "Unaware",
+        high: "Well-informed",
+      },
+      {
+        id: "capacity",
+        label: "Capacity to Comply",
+        desc: "Do people have the practical resources to comply — time, money, skills, transportation, infrastructure?",
+        low: "Major barriers",
+        high: "Fully able",
+      },
+      {
+        id: "motivation",
+        label: "Motivation",
+        desc: "How willing is the target population to engage with or comply with the desired behavior?",
+        low: "Resistant",
+        high: "Eager",
+      },
+      {
+        id: "trust",
+        label: "Trust in Institutions",
+        desc: "How much does the population trust the government or organization implementing the policy?",
+        low: "Deep distrust",
+        high: "High confidence",
+      },
+      {
+        id: "norms",
+        label: "Social Norm Alignment",
+        desc: "Do the community's prevailing social norms support or work against the desired behavior?",
+        low: "Norms oppose",
+        high: "Norms support",
+      },
     ];
 
     const PRESETS = [
@@ -131,6 +167,7 @@
     function App() {
       const [profile, setProfile] = useState({ awareness: 50, capacity: 50, motivation: 50, trust: 50, norms: 50 });
       const [selId, setSelId] = useState("information");
+      const [showGuide, setShowGuide] = useState(false);
 
       const inst = INSTRUMENTS.find((i) => i.id === selId);
       const uptake = useMemo(() => Math.round(getUptake(profile, inst) * 100), [profile, selId]);
@@ -163,11 +200,12 @@
               Population Profile
             </div>
             {DIMS.map((d) => (
-              <div key={d.id} style={{ marginBottom: 12 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, fontWeight: 600, marginBottom: 2 }}>
+              <div key={d.id} style={{ marginBottom: 16 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, fontWeight: 600, marginBottom: 1 }}>
                   <span>{d.label}</span>
                   <span style={{ fontWeight: 400, color: "#888", fontVariantNumeric: "tabular-nums" }}>{profile[d.id]}</span>
                 </div>
+                <p style={{ fontSize: 12, color: "#777", lineHeight: 1.4, marginBottom: 4 }}>{d.desc}</p>
                 <input type="range" min={0} max={100} value={profile[d.id]}
                   onChange={(e) => setProfile((p) => ({ ...p, [d.id]: +e.target.value }))}
                   style={{ width: "100%", accentColor: "#2563eb" }} />
@@ -176,6 +214,33 @@
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Instrument Reference Guide */}
+          <div style={{ marginBottom: 22 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#888", marginBottom: 10 }}>
+              Instrument Reference Guide
+            </div>
+            <button onClick={() => setShowGuide(!showGuide)} style={{
+              fontSize: 13, padding: "8px 14px", borderRadius: 6, border: "1.5px solid #d0d0d0",
+              background: showGuide ? "#f0f4ff" : "#fafafa", color: "#333", fontFamily: "inherit",
+              width: "100%", textAlign: "left",
+            }}>
+              {showGuide ? "▾" : "▸"} {showGuide ? "Hide" : "Show"} instrument descriptions — what does each instrument look like in practice?
+            </button>
+            {showGuide && (
+              <div style={{ marginTop: 10 }}>
+                {INSTRUMENTS.map((ins) => (
+                  <div key={ins.id} style={{
+                    padding: "10px 14px", marginBottom: 6, borderRadius: 6,
+                    background: "#fafafa", border: "1px solid #e5e5e5",
+                  }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 700, color: "#1a1a1a", marginBottom: 3 }}>{ins.label}</div>
+                    <div style={{ fontSize: 12.5, color: "#555", lineHeight: 1.5 }}>{ins.shortDesc}</div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Instrument Select */}
@@ -204,7 +269,7 @@
               <span style={{ fontSize: 20, fontWeight: 700, color: barColor }}>{uptake}%</span>
             </div>
             <div style={{ height: 10, borderRadius: 5, background: "#e5e5e5", overflow: "hidden", margin: "6px 0 12px" }}>
-              <div style={{ height: "100%", borderRadius: 5, width: `${uptake}%`, background: barColor, transition: "all 0.35s ease" }} />
+              <div style={{ height: "100%", borderRadius: 5, width: uptake + "%", background: barColor, transition: "all 0.35s ease" }} />
             </div>
 
             {mismatches.length === 0 ? (
@@ -215,11 +280,11 @@
               <div key={i} style={{
                 padding: "8px 12px", borderRadius: 6, marginBottom: 6,
                 background: m.critical ? "#fef2f2" : "#fffbeb",
-                border: `1px solid ${m.critical ? "#fecaca" : "#fde68a"}`,
+                border: "1px solid " + (m.critical ? "#fecaca" : "#fde68a"),
                 fontSize: 13, lineHeight: 1.5, color: "#333",
               }}>
                 <strong style={{ color: m.critical ? "#dc2626" : "#92400e" }}>
-                  {m.critical ? "\u26A0 Mismatch" : "\u25C6 Caution"}
+                  {m.critical ? "&#9888; Mismatch" : "&#9670; Caution"}
                 </strong>{" "}
                 <span style={{ color: "#888", fontSize: 12 }}>({DIMS.find((dd) => dd.id === m.dim)?.label})</span>
                 <br />{m.msg}
@@ -242,7 +307,7 @@
                 <span style={{ fontWeight: 600, fontVariantNumeric: "tabular-nums", color: r.uptake >= 0.6 ? "#059669" : r.uptake >= 0.4 ? "#d97706" : "#dc2626" }}>
                   {Math.round(r.uptake * 100)}%
                 </span>
-                {r.criticals > 0 && <span style={{ fontSize: 11, color: "#dc2626", fontWeight: 600 }}>{r.criticals}\u26A0</span>}
+                {r.criticals > 0 && <span style={{ fontSize: 11, color: "#dc2626", fontWeight: 600 }}>{r.criticals} &#9888;</span>}
               </div>
             ))}
           </div>
