@@ -284,7 +284,7 @@
                 fontSize: 13, lineHeight: 1.5, color: "#333",
               }}>
                 <strong style={{ color: m.critical ? "#dc2626" : "#92400e" }}>
-                  {m.critical ? "⚠ Mismatch" : "◆ Caution"}
+                  {m.critical ? "Mismatch" : "Caution"}
                 </strong>{" "}
                 <span style={{ color: "#888", fontSize: 12 }}>({DIMS.find((dd) => dd.id === m.dim)?.label})</span>
                 <br />{m.msg}
@@ -307,7 +307,7 @@
                 <span style={{ fontWeight: 600, fontVariantNumeric: "tabular-nums", color: r.uptake >= 0.6 ? "#059669" : r.uptake >= 0.4 ? "#d97706" : "#dc2626" }}>
                   {Math.round(r.uptake * 100)}%
                 </span>
-                {r.criticals > 0 && <span style={{ fontSize: 11, color: "#dc2626", fontWeight: 600 }}>{r.criticals} ⚠</span>}
+                {r.criticals > 0 && <span style={{ fontSize: 11, color: "#dc2626", fontWeight: 600 }}>{r.criticals} mismatch{r.criticals > 1 ? "es" : ""}</span>}
               </div>
             ))}
           </div>
